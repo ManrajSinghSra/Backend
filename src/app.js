@@ -1,21 +1,24 @@
-const express=require("express")
+const express = require("express");
 
-const app=express()
+const app = express();
 
-app.use("/",(req,res)=>{
-    res.send("hello")
-})
+const handle1=(req,res,next)=>{
+  next() 
+  console.log("End")
 
-app.use("/home",(req,res)=>{
-    if(req.url=="/helloe"){
-        res.send("this ies secret")
-    }
-    else
-    {
-      res.send("Hello from server")
-    }
-    })
+} 
+const handle2 = (req, res,next) => {
+  next()
+};
 
-app.listen(3000,()=>{
-    console.log("Server is Listening on Port 3000")
-})
+const handle3=(req,res)=>{
+  res.send("three")
+}
+ 
+
+app.get("/user",[handle1,handle2],handle3)
+
+ 
+app.listen(9001, () => {
+  console.log("Server is Listening on Port 3000");
+});
