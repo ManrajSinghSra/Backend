@@ -1,11 +1,30 @@
 const express = require("express");
-const {Auth}=require("./middlewares/auth")
+// const {Auth}=require("./middlewares/auth")
 const app = express();
 
 const {connectDB}=require("./config/dataBase")
+const User=require("./models/user")
 
+// app.use("/user");
 
-app.use("/user",Auth);
+app.post("/signup",async(req,res)=>{
+
+  const userObj={
+    firstName:"Manraj",
+    lastName:"Singh",
+    emailId:"man@m.com",
+    password:123,
+    age:20,
+    gender:"Male"
+  }
+
+  const user=new User(userObj)
+
+   await user.save()
+
+   res.send("User Created")
+
+})
 
 
 app.get("/user",(req,res)=>{
@@ -27,8 +46,6 @@ const startServer=async()=>{
     }
 
 }
- 
-
 startServer()
 
 
