@@ -1,51 +1,145 @@
-const express = require("express");
-// const {Auth}=require("./middlewares/auth")
-const app = express();
-
+const express=require("express")
+const validate = require("./utils/validate");
+const app=express()
 const {connectDB}=require("./config/dataBase")
 const User=require("./models/user")
 
-// app.use("/user");
 
-app.post("/signup",async(req,res)=>{
+app.use(express.json())
 
-  const userObj={
-    firstName:"Manraj",
-    lastName:"Singh",
-    emailId:"man@m.com",
-    password:123,
-    age:20,
-    gender:"Male"
+app.get("/user",async(req,res)=>{
+  
+  const email=req.body.emailId;
+
+  try {
+    const user=await User.findOne(email)
+
+    console.log(user);
+    
+    if(!user){
+      res.status(404).send("User not Found !");
+    }
+    else{
+      res.send(user);
+    }
+    
+  } catch (error) {
+    console.log("Something went wrong")
+    res.send(`Something went wrong ${error}`);
   }
-
-  const user=new User(userObj)
-
-   await user.save()
-
-   res.send("User Created")
-
+  // res.send("Hello")
 })
 
 
-app.get("/user",(req,res)=>{
-  res.send("All data send")
+//feed api
+app.get("/feed",async(req,res)=>{
+  try {
+    
+    const users=await User.find({});
+    if(users.length===0){
+      res.status(404).send("THere is no user")
+    }
+    else{
+      const names=users.map((curr)=>{
+        return curr.firstName
+      }) 
+
+      res.send(names)
+    }
+  } 
+  catch (error) {
+    
+    console.log("Something went Wrong", error)
+  }
 })
+app.post("/user",async(req,res)=>{
 
-const startServer=async()=>{
-    try {
-      await connectDB();
-      console.log("Connected Successfully");
+  try {
+    console.log(req.body);
+    const user = new User(req.body);
 
-      app.listen(9001, () => {
-        console.log("Server is Listening on Port 3000");
-      });
-      
-    } catch (error) {
-      
-      console.log("Some error Occurs",error.message)
+    const find = await User.findOne({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      emailId: req.body.emailId,
+    });
+    if(find){
+      throw new Error("User already Exists")
     }
 
+    validate(user);
+
+    await user.save();
+    res.send("User successfully added");
+
+  } catch (error) {
+    console.log("THere is an error ",error.message)
+    res.send(`ERROR : ${error.message}`);
+  }
+  
+})
+
+//patch
+app.patch("/user/:email",async(req,res)=>{
+  const userId=req.params.email;
+
+ 
+
+  try {
+
+    const ALLOWED_UPDATES = ["firstName", "lastName", "gender"];
+
+
+    const newData=req.body
+
+    const isAllowed=Object.keys(newData).every((key)=>ALLOWED_UPDATES.includes(key))
+
+    if(!isAllowed){
+      throw new Error("This request cannot be fullfiled")
+    }
+    const newD=await User.findOneAndUpdate({emailId:userId},newData,{runValidators:true});
+    res.send("User is Updated")
+    
+  } catch (error) {
+    res.status(400).send(`There is an error ${error.message}`);
+  }
+}) 
+
+//delete by email id
+app.delete("/user/:email",async(req,res)=>{
+
+  const email=req.params.email
+
+  console.log(email);
+  
+  try {
+    const user=await User.findOneAndDelete({emailId:email})
+
+    if(!user){
+      res.status(404).send("Something went wrong hdere");
+    }
+    else{
+      res.send(`User ${email} is deleted `)
+    }
+    
+  } catch (error) {
+    console.log("Something went wrong ",error)
+  }
+})
+ 
+
+const serverStart=async()=>{
+
+  try {
+
+    await connectDB()
+    console.log("Database Connected")
+
+    app.listen(5001,()=>console.log("Server is Stated on PORT:4001"))
+  } catch (error) {
+    
+  }
 }
-startServer()
 
 
+serverStart()
