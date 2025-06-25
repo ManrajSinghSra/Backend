@@ -18,8 +18,8 @@ app.use(cookieParser())
 
 //login  --done token part
 app.post("/login",async(req,res)=>{
-  try {
 
+  try {
     valiLogin(req.body);
 
     const {emailId,password}=req.body
@@ -28,18 +28,17 @@ app.post("/login",async(req,res)=>{
       throw new Error("INVALID CREDENTIALS");
     } 
 
-    const isPass= await bcrypt.compare(password,user.password);
-
+    const isPass = await user.verifyPass(password)
     if(!isPass){
       throw new Error("INVALID CREDENTIALS");
     }
 
     const cap=user.firstName.charAt(0).toLocaleUpperCase()+user.firstName.slice(1)
 
-    const token=await jwt.sign({_id:user._id},"deujgfgsjw",{expiresIn:"1d"});
+    const token=await user.getToken();
 
 
-    res.cookie("token",d);
+    res.cookie("token",token,{expires:new Date(Date.now()+1*3600000),httpOnly:true});
     res.send(`Welcome ${cap}`)
   } 
   catch (error) {

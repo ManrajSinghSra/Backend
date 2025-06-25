@@ -1,6 +1,7 @@
-const mongoose=require("mongoose")
-const vali=require("validator")
-
+const mongoose = require("mongoose");
+const vali = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -9,55 +10,48 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      maxLength:30,
-      // validate(value){
-      //   if(value==""){
-      //     throw new Error("Name field is required")
-      //   }
-      // }
-      
+      maxLength: 30,
     },
     lastName: {
       type: String,
-      required: true, 
+      required: true,
       trim: true,
       lowercase: true,
-      maxLength:30
+      maxLength: 30,
     },
     emailId: {
       type: String,
-      unique:true,
-      lowercase:true,
-      trim:true,
-      validate(value){
-        if(value==""){
-            throw new Error("Email is Empty")
+      unique: true,
+      lowercase: true,
+      trim: true,
+      validate(value) {
+        if (value == "") {
+          throw new Error("Email is Empty");
+        } else if (!vali.isEmail(value)) {
+          throw new Errow("This Email is Not valid");
         }
-        else if(!vali.isEmail(value)){
-           throw new Errow("This Email is Not valid")
-        }
-      }
-
+      },
     },
     password: {
       type: String,
-      minLength:[5,"Passwors is too short"],
-      maxLength:90
+      minLength: [5, "Passwors is too short"],
+      maxLength: 90,
     },
     age: {
       type: Number,
-      min:[0,"Age Cannot be negative"],
-      max:[120,"Age is too high to be real"]
-
+      min: [0, "Age Cannot be negative"],
+      max: [120, "Age is too high to be real"],
     },
     gender: {
       type: String,
-      lowercase:true,
-      validate(value){
-        if(!["male","female","others"].includes(value)){
-            throw new Error("Invalid Gender , Gender must be male , female and others.")
+      lowercase: true,
+      validate(value) {
+        if (!["male", "female", "others"].includes(value)) {
+          throw new Error(
+            "Invalid Gender , Gender must be male , female and others."
+          );
         }
-      }
+      },
     },
   },
   {
@@ -65,6 +59,25 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User=mongoose.model("DevUser",userSchema)
+
+userSchema.methods.getToken = async function () {
+  const user = this;
+  const token = await jwt.sign({ _id: user._id }, "deujgfgsjw", {
+    expiresIn: "1d",
+  });
+  return token;
+};
+
+userSchema.methods.verifyPass = async function (pass) {
+  const user = this;
+  const hashedPass = user.password;
+
+  const isVlaid = await bcrypt.compare(pass, hashedPass);
+  return isVlaid;
+};
+
+
+
+const User = mongoose.model("DevUser", userSchema);
 
 module.exports = User;
