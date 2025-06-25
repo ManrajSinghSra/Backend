@@ -1,5 +1,6 @@
 const express=require("express")
 const validate = require("./utils/validate");
+const valiLogin=require("./utils/valiLogin")
 const app=express()
 const {connectDB}=require("./config/dataBase")
 const User=require("./models/user")
@@ -7,34 +8,20 @@ const bcrypt=require("bcrypt")
 const cookieParser=require("cookie-parser")
 const jwt=require("jsonwebtoken")
 
+const {Auth}=require("./middlewares/auth");
+const e = require("express");
+
 app.use(express.json())
 app.use(cookieParser())
+ 
 
-app.get("/user",async(req,res)=>{
-  
-  const email=req.body.emailId;
 
+//login  --done token part
+app.post("/login",async(req,res)=>{
   try {
-    const user=await User.findOne(email)
 
-    console.log(user);
-    
-    if(!user){
-      res.status(404).send("User not Found !");
-    }
-    else{
-      res.send(user);
-    }
-    
-  } catch (error) {
-    console.log("Something went wrong")
-    res.send(`Something went wrong ${error}`);
-  }
-  // res.send("Hello")
-})
-//login
-app.post("/userLogin",async(req,res)=>{
-  try {
+    valiLogin(req.body);
+
     const {emailId,password}=req.body
     const user=await User.findOne({emailId})
     if(!user){
@@ -49,52 +36,26 @@ app.post("/userLogin",async(req,res)=>{
 
     const cap=user.firstName.charAt(0).toLocaleUpperCase()+user.firstName.slice(1)
 
-    const token=await jwt.sign({_id:user._id},"deusjw");
+    const token=await jwt.sign({_id:user._id},"deujgfgsjw",{expiresIn:"1d"});
 
 
-    res.cookie("token",token);
+    res.cookie("token",d);
     res.send(`Welcome ${cap}`)
-  } catch (error) {
-    res.status(400).send("INVALID CREDENTIALS")
-
-  }
-})
-
-//profile
-app.get("/profile",async(req,res)=>{
-
-  console.log(req.cookies)
-
-  res.send("Hello uuser")
-
-})
-
-//feed api
-app.get("/feed",async(req,res)=>{
-  try {
-    
-    const users=await User.find({});
-    if(users.length===0){
-      res.status(404).send("THere is no user")
-    }
-    else{
-      const names=users.map((curr)=>{
-        return curr.firstName
-      }) 
-
-      res.send(names)
-    }
   } 
   catch (error) {
-    
-    console.log("Something went Wrong", error)
+    res.status(400).send(error.message)
+
   }
 })
-app.post("/user",async(req,res)=>{
+ 
+
+//create new user
+app.post("/signup",async(req,res)=>{
 
   try { 
 
         const {firstName,lastName,emailId,password}=req.body;
+        validate(req.body);
 
         const find = await User.findOne({
           firstName,
@@ -105,9 +66,7 @@ app.post("/user",async(req,res)=>{
         if(find){
           throw new Error("EMAIL ALREADY TAKEN")
         }
-
-        validate(req.body);
-
+        
         const hashPass = await bcrypt.hash(password, 10);
         const user = new User({
           firstName,
@@ -117,6 +76,7 @@ app.post("/user",async(req,res)=>{
         });
 
         await user.save();
+
         res.send("User successfully added");
 
   } 
@@ -126,6 +86,12 @@ app.post("/user",async(req,res)=>{
         res.send(`ERROR : ${error.message}`);
   }
   
+})
+
+app.post("/sendConnectionRequest",Auth,async(req,res)=>{
+
+  res.send("Request send")
+
 })
 
 
@@ -170,54 +136,7 @@ app.post("/userAll",async(req,res)=>{
 
    
 })
-
-//patch
-app.patch("/user/:email",async(req,res)=>{
-  const userId=req.params.email;
-
  
-
-  try {
-
-    const ALLOWED_UPDATES = ["firstName", "lastName", "gender"];
-
-
-    const newData=req.body
-
-    const isAllowed=Object.keys(newData).every((key)=>ALLOWED_UPDATES.includes(key))
-
-    if(!isAllowed){
-      throw new Error("This request cannot be fullfiled")
-    }
-    const newD=await User.findOneAndUpdate({emailId:userId},newData,{runValidators:true});
-    res.send("User is Updated")
-    
-  } catch (error) {
-    res.status(400).send(`There is an error ${error.message}`);
-  }
-}) 
-
-//delete by email id
-app.delete("/user/:email",async(req,res)=>{
-
-  const email=req.params.email
-
-  console.log(email);
-  
-  try {
-    const user=await User.findOneAndDelete({emailId:email})
-
-    if(!user){
-      res.status(404).send("Something went wrong hdere");
-    }
-    else{
-      res.send(`User ${email} is deleted `)
-    }
-    
-  } catch (error) {
-    console.log("Something went wrong ",error)
-  }
-})
  
 
 const serverStart=async()=>{

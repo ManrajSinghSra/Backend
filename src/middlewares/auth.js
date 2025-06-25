@@ -1,13 +1,31 @@
-const Auth=(req,res,next)=>{
+const jwt=require("jsonwebtoken");
+const User = require("../models/user");
 
-    const token="xyz"
+const Auth=async(req,res,next)=>{
 
-    if(token=="xyz"){
-        next()
+    try {
+        const { token } = req.cookies;
+        if(!token){
+            throw new Error("please login")
+        }
+
+        const { _id } = await jwt.verify(token, "deujgfgsjw");
+
+        const user = await User.findById(_id);
+
+        if (!user) {
+          throw new Error("user not exist");
+        }
+        req.user=user
+        next();
+    } catch (error) {
+        res.status(400).send(error.message);
+        //
     }
-    else{
-        res.status(401).send("Unauthorized access")
-    }
+ 
+    
+
+     
 }
 
 module.exports={Auth}

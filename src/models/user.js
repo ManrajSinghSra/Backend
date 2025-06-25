@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       maxLength:30,
+      // validate(value){
+      //   if(value==""){
+      //     throw new Error("Name field is required")
+      //   }
+      // }
       
     },
     lastName: {
