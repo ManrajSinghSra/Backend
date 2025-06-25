@@ -8,8 +8,7 @@ const bcrypt=require("bcrypt")
 const cookieParser=require("cookie-parser")
 const jwt=require("jsonwebtoken")
 
-const {Auth}=require("./middlewares/auth");
-const e = require("express");
+const {Auth}=require("./middlewares/auth"); 
 
 app.use(express.json())
 app.use(cookieParser())
@@ -35,7 +34,7 @@ app.post("/login",async(req,res)=>{
 
     const cap=user.firstName.charAt(0).toLocaleUpperCase()+user.firstName.slice(1)
 
-    const token=await user.getToken();
+    const token=await  user.getToken();
 
 
     res.cookie("token",token,{expires:new Date(Date.now()+1*3600000),httpOnly:true});
@@ -87,6 +86,19 @@ app.post("/signup",async(req,res)=>{
   
 })
 
+app.get("/profile",Auth,(req,res)=>{
+
+  try {
+    
+    const user=req.user
+    
+    res.send(`Hello ${user.firstName}`)
+  } catch (error) {
+    
+  }
+})
+
+// SEND CONNECTION
 app.post("/sendConnectionRequest",Auth,async(req,res)=>{
 
   res.send("Request send")

@@ -72,8 +72,8 @@ userSchema.methods.verifyPass = async function (pass) {
   const user = this;
   const hashedPass = user.password;
 
-  const isVlaid = await bcrypt.compare(pass, hashedPass);
-  return isVlaid;
+  const isValid = await bcrypt.compare(pass, hashedPass);
+  return isValid;
 };
 
 

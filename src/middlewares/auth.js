@@ -6,10 +6,10 @@ const Auth=async(req,res,next)=>{
     try {
         const { token } = req.cookies;
         if(!token){
-            throw new Error("please login")
+            throw new Error("Please login")
         }
 
-        const { _id } = await jwt.verify(token, "deujgfgsjw");
+        const {_id} = await jwt.verify(token, "deujgfgsjw");
 
         const user = await User.findById(_id);
 
