@@ -3,9 +3,12 @@ const validate = require("./utils/validate");
 const app=express()
 const {connectDB}=require("./config/dataBase")
 const User=require("./models/user")
-
+const bcrypt=require("bcrypt")
+const cookieParser=require("cookie-parser")
+const jwt=require("jsonwebtoken")
 
 app.use(express.json())
+app.use(cookieParser())
 
 app.get("/user",async(req,res)=>{
   
@@ -29,7 +32,42 @@ app.get("/user",async(req,res)=>{
   }
   // res.send("Hello")
 })
+//login
+app.post("/userLogin",async(req,res)=>{
+  try {
+    const {emailId,password}=req.body
+    const user=await User.findOne({emailId})
+    if(!user){
+      throw new Error("INVALID CREDENTIALS");
+    } 
 
+    const isPass= await bcrypt.compare(password,user.password);
+
+    if(!isPass){
+      throw new Error("INVALID CREDENTIALS");
+    }
+
+    const cap=user.firstName.charAt(0).toLocaleUpperCase()+user.firstName.slice(1)
+
+    const token=await jwt.sign({_id:user._id},"deusjw");
+
+
+    res.cookie("token",token);
+    res.send(`Welcome ${cap}`)
+  } catch (error) {
+    res.status(400).send("INVALID CREDENTIALS")
+
+  }
+})
+
+//profile
+app.get("/profile",async(req,res)=>{
+
+  console.log(req.cookies)
+
+  res.send("Hello uuser")
+
+})
 
 //feed api
 app.get("/feed",async(req,res)=>{
@@ -54,29 +92,83 @@ app.get("/feed",async(req,res)=>{
 })
 app.post("/user",async(req,res)=>{
 
-  try {
-    console.log(req.body);
-    const user = new User(req.body);
+  try { 
 
-    const find = await User.findOne({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      emailId: req.body.emailId,
-    });
-    if(find){
-      throw new Error("User already Exists")
-    }
+        const {firstName,lastName,emailId,password}=req.body;
 
-    validate(user);
+        const find = await User.findOne({
+          firstName,
+          lastName ,
+          emailId
+        });
 
-    await user.save();
-    res.send("User successfully added");
+        if(find){
+          throw new Error("EMAIL ALREADY TAKEN")
+        }
 
-  } catch (error) {
-    console.log("THere is an error ",error.message)
-    res.send(`ERROR : ${error.message}`);
+        validate(req.body);
+
+        const hashPass = await bcrypt.hash(password, 10);
+        const user = new User({
+          firstName,
+          lastName,
+          emailId,
+          password:hashPass,
+        });
+
+        await user.save();
+        res.send("User successfully added");
+
+  } 
+  
+  catch (error) {
+        console.log(`ERROR : ${error.message}`)
+        res.send(`ERROR : ${error.message}`);
   }
   
+})
+
+
+// add at once
+app.post("/userAll",async(req,res)=>{
+
+  const users=req.body
+
+  users.forEach(async(curr) => {
+
+    try {
+          const { firstName, lastName, emailId, password } = curr;
+
+          const user = await User.findOne({
+            firstName,
+            lastName,
+            emailId
+          });
+
+          if (user) {
+            throw new Error("Email Alreadt Taken");
+          }
+          validate(curr)
+
+          const hash=await bcrypt.hash(password,10);
+
+          const addedUser = new User({ firstName, lastName, emailId, password:hash });
+
+          addedUser.save()
+
+         
+
+    } 
+    catch (error) {
+
+          res.status(400).send(`Error : ${error.message}`)
+      
+    }
+  });
+
+  res.send("Users is successfully added");
+
+   
 })
 
 //patch

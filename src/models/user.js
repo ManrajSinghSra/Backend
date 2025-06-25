@@ -14,8 +14,7 @@ const userSchema = new mongoose.Schema(
     },
     lastName: {
       type: String,
-      required: true,
-      unique: true,
+      required: true, 
       trim: true,
       lowercase: true,
       maxLength:30
@@ -38,7 +37,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       minLength:[5,"Passwors is too short"],
-      maxLength:15
+      maxLength:90
     },
     age: {
       type: Number,
