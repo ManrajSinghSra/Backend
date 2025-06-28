@@ -3,9 +3,10 @@ const bcrypt = require("bcrypt");
 const authRouter=express.Router()
 const validate = require("../utils/validate");
 
+const Auth=require("../middlewares/auth")
+
 const valiLogin=require("../utils/valiLogin")
-const User=require("../models/user");
-// const { model } = require("mongoose");
+const User=require("../models/user"); 
 
 authRouter.post("/login", async (req, res) => {
   try {
@@ -52,6 +53,7 @@ authRouter.post("/signup",async(req,res)=>{
           }
           
           const hashPass = await bcrypt.hash(password, 10);
+          
           const user = new User({
             firstName,
             lastName,
@@ -72,5 +74,13 @@ authRouter.post("/signup",async(req,res)=>{
     
   })
 
+authRouter.post("/logout",(req,res)=>{
+  // res.cookie("token",null,{expire:new Date(Date.now)})
+
+  res.clearCookie("token")
+
+  res.send("Logout successful")
+})  
+  
 
 module.exports=authRouter

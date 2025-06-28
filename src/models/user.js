@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       maxLength: 30,
+      minLength:3
     },
     lastName: {
       type: String,
@@ -52,6 +53,17 @@ const userSchema = new mongoose.Schema(
           );
         }
       },
+    },
+    about: {
+      type:String,
+      maxLength:200,
+      trim:true,
+      validate(value){
+        if(!/^[a-zA-Z0-9\s.,!?'"()-]*$/.test(value)){
+         throw new Error("Invalid about section")
+        }
+      }
+
     },
   },
   {

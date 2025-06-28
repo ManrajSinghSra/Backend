@@ -12,12 +12,13 @@ const authRouter=require("./routers/auth")
 const profileRouter=require("./routers/profile")
 
 app.use(express.json())
-app.use(cookieParser())
+app.use(cookieParser()) 
  
 
 //login and signup
 app.use("/",authRouter)
 app.use("/",profileRouter)
+// app.use("/",r)
  
 
 
