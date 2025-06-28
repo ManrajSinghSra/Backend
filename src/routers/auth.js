@@ -2,32 +2,25 @@ const express=require("express")
 const bcrypt = require("bcrypt");
 const authRouter=express.Router()
 const validate = require("../utils/validate");
-
-const Auth=require("../middlewares/auth")
-
+ 
 const valiLogin=require("../utils/valiLogin")
 const User=require("../models/user"); 
 
 authRouter.post("/login", async (req, res) => {
+
   try {
     valiLogin(req.body);
-
     const { emailId, password } = req.body;
     const user = await User.findOne({ emailId });
     if (!user) {
       throw new Error("INVALID CREDENTIALS");
     }
-
     const isPass = await user.verifyPass(password);
     if (!isPass) {
       throw new Error("INVALID CREDENTIALS");
     }
-
-    const cap =
-      user.firstName.charAt(0).toLocaleUpperCase() + user.firstName.slice(1);
-
+    const cap =user.displayName()
     const token = await user.getToken();
-
     res.cookie("token", token, {
       expires: new Date(Date.now() + 1 * 3600000),
       httpOnly: true,
@@ -37,8 +30,6 @@ authRouter.post("/login", async (req, res) => {
     res.status(400).send(error.message);
   }
 });
-
-
 authRouter.post("/signup",async(req,res)=>{
 
     try { 
@@ -72,14 +63,9 @@ authRouter.post("/signup",async(req,res)=>{
           res.send(`ERROR : ${error.message}`);
     }
     
-  })
-
-authRouter.post("/logout",(req,res)=>{
-  // res.cookie("token",null,{expire:new Date(Date.now)})
-
-  res.clearCookie("token")
-
-  res.send("Logout successful")
+})
+authRouter.post("/logout",(req,res)=>{ 
+  res.clearCookie("token").send("Logout successful")
 })  
   
 

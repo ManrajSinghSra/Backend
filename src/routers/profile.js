@@ -1,10 +1,8 @@
 const express=require("express")
-const Auth=require("../middlewares/auth");
-const User = require("../models/user");
+const Auth=require("../middlewares/auth"); 
 const profileRouter=express.Router()
 const validateEdit=require("../utils/validateEdit")
-
-const bcrypt=require("bcrypt")
+ 
 
 profileRouter.get("/profile/view", Auth, (req, res) => {
   try {
@@ -20,15 +18,11 @@ profileRouter.get("/profile/view", Auth, (req, res) => {
 profileRouter.patch("/profile/edit",Auth,async(req,res)=>{
 
   try {  
-    
     validateEdit(req.body);
     const user = req.user;
 
-
     Object.keys(req.body).forEach((key)=>user[key]=req.body[key])
-
     
-
     await user.save()  
     res.send("Updated successfully");
 

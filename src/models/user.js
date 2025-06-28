@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
       maxLength: 30,
@@ -72,9 +71,9 @@ const userSchema = new mongoose.Schema(
 );
 
 
-userSchema.methods.getToken = async function () {
+userSchema.methods.getToken =  function () {
   const user = this;
-  const token = await jwt.sign({ _id: user._id }, "deujgfgsjw", {
+  const token = jwt.sign({ _id: user._id }, "deujgfgsjw", {
     expiresIn: "1d",
   });
   return token;
@@ -82,12 +81,15 @@ userSchema.methods.getToken = async function () {
 
 userSchema.methods.verifyPass = async function (pass) {
   const user = this;
-  const hashedPass = user.password;
-
+  const hashedPass = user.password
   const isValid = await bcrypt.compare(pass, hashedPass);
   return isValid;
 };
 
+userSchema.methods.displayName=function(){
+  const user=this;
+  return user.firstName.charAt(0).toLocaleUpperCase() + user.firstName.slice(1);
+}
 
 
 const User = mongoose.model("DevUser", userSchema);
