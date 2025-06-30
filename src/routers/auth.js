@@ -9,7 +9,7 @@ const User=require("../models/user");
 authRouter.post("/login", async (req, res) => {
 
   try {
-    valiLogin(req.body);
+    valiLogin(req);
     const { emailId, password } = req.body;
     const user = await User.findOne({ emailId });
     if (!user) {

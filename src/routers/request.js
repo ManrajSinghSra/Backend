@@ -7,7 +7,7 @@ const User = require("../models/user");
 requestRouter.get("/request/send/:status/:toUserId", Auth, async(req, res) => {
   try {
     const user=req.user
-    const  from=user._id
+    const from=user._id
     const to=req.params.toUserId
     const status=req.params.status
 
