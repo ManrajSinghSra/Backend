@@ -7,7 +7,7 @@ const Auth=require("./middlewares/auth");
 
 const authRouter=require("./routers/auth")
 const profileRouter=require("./routers/profile")
-
+const requestRouter=require("./routers/request")
 app.use(express.json())
 app.use(cookieParser()) 
  
@@ -15,13 +15,8 @@ app.use(cookieParser())
 //login and signup
 app.use("/",authRouter)
 app.use("/",profileRouter) 
+app.use("/",requestRouter)
  
-// SEND CONNECTION
-app.post("/sendConnectionRequest",Auth,async(req,res)=>{
-
-  res.send("Request send")
-
-})
  
 
 const serverStart=async()=>{
