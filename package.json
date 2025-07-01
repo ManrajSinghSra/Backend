@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "clear && nodemon src/app.js"
+    "dev": "clear && nodemon Backend/src/app.js"
   },
   "author": "",
   "license": "ISC",

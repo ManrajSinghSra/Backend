@@ -8,6 +8,7 @@ const connectionSchema = new mongoose.Schema(
     },
     to: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "DevUser",
     },
     status: {
       type: String,
