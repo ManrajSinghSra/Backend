@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       maxLength: 30,
-      minLength:3
+      minLength: 3,
     },
     lastName: {
       type: String,
@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       lowercase: true,
       validate(value) {
-        if (!["male", "female", "others"].includes(value)) {
+        if (!["male", "female", "others","Male","Female","Others"].includes(value)) {
           throw new Error(
             "Invalid Gender , Gender must be male , female and others."
           );
@@ -54,23 +54,27 @@ const userSchema = new mongoose.Schema(
       },
     },
     about: {
-      type:String,
-      maxLength:200,
-      trim:true,
-      validate(value){
-        if(!/^[a-zA-Z0-9\s.,!?'"()-]*$/.test(value)){
-         throw new Error("Invalid about section")
-        }
-      }
-
+      type: String,
+      maxLength: 200,
+      trim: true,
+      // validate(value) {
+      //   if (!/^[a-zA-Z0-9\/s.,!?'"()-]*$/.test(value)) {
+      //     throw new Error("Invalid about section");
+      //   }
+      // }
+      
+    },
+    photoURL: {
+      type: String,
+      trime: true,
+      default:
+        "https://thumbs.dreamstime.com/b/cartoon-smiling-boy-vector-illustration-avatar-profile-picture-use-vibrant-young-wearing-casual-hoodie-character-364611515.jpg",
     },
   },
   {
     timestamps: true,
   }
 );
-
-
 userSchema.methods.getToken =  function () {
   const user = this;
   const token = jwt.sign({ _id: user._id }, "deujgfgsjw", {

@@ -8,9 +8,8 @@ const bcrypt=require("bcrypt")
 profileRouter.get("/profile/view", Auth, (req, res) => {
 
   try {
-    const user = req.user;
-    const userCap=user.displayName()
-    res.send(`Hello ${userCap}`);
+    const user = req.user; 
+    res.json({user});
   } catch (error) {
     res.status(400).send(`ERROR : ${error.message}`);
   } 
@@ -19,13 +18,13 @@ profileRouter.get("/profile/view", Auth, (req, res) => {
 profileRouter.patch("/profile/edit",Auth,async(req,res)=>{
 
   try {  
-    validateEdit(req.body);
-    const user = req.user;
 
-    Object.keys(req.body).forEach((key)=>user[key]=req.body[key])
-    
-    await user.save()  
-    res.send("Updated successfully");
+    validateEdit(req.body); 
+    const userP = req.user;
+ 
+    Object.keys(req.body).forEach((key)=>userP[key]=req.body[key])
+    const user=await userP.save()  
+    res.json({user});
 
   } catch (error) {
     res.status(400).send(error.message)

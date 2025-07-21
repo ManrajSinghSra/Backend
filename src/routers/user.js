@@ -14,15 +14,15 @@ userRouter.get("/user/requests/pending",Auth,async(req,res)=>{
     const findRequests = await Connect.find({
       to: user._id,
       status: "interested",
-    }).populate("from",["firstName","lastName"]) 
+    }).populate("from","firstName lastName about photoURL")
 
+    
 
     if(!findRequests){
-        return res.send("No pending requests")
-    }
-    const userName=findRequests.map((curr)=>curr.from.firstName)    
+       throw new Error("No pending requests")
+    }    
 
-    res.json({ message: "Requests are from : " + userName.join(" , ") });
+    res.json({data:findRequests});
    } catch (error) {
     res.status(400).send(`ERROR : ${error.message}`)
     
@@ -38,14 +38,18 @@ userRouter.get("/user/connections",Auth,async(req,res)=>{
         { from: loginUser._id, status: "accepted" },
         { to: loginUser._id, status: "accepted" },
       ],
-    }).populate("from to", "firstName lastName");
+    }).populate("from to", "firstName lastName about photoURL");
+
+
     const userName = findConnections.map((curr) =>{
       if(curr.from._id.toString() === loginUser._id.toString()){
         return curr.to
       }
       return curr.from
     });  
-    res.json({ message:userName });
+
+    
+    res.json({ data:userName });
   
   } catch (error) {
     res.status(400).send("ERROR : "+error.message)
@@ -59,10 +63,6 @@ userRouter.get("/feed",Auth,async(req,res)=>{
 
   try {
     const user=req.user
-    const {page,limit}=req.query
-
-    const skip=(page-1)*limit 
-    
 
     const notfeed=await Connect.find({
       $or:[
@@ -70,7 +70,10 @@ userRouter.get("/feed",Auth,async(req,res)=>{
       ]
     }).select("from to")
 
+
     const hide = new Set();
+
+    hide.add(user._id.toString());
 
     notfeed.forEach((ele)=>{
       hide.add(ele.from.toString())
@@ -78,11 +81,13 @@ userRouter.get("/feed",Auth,async(req,res)=>{
     })
  
     const showUser=await User.find({
-      _id:{$nin:Array.from(hide)}
-    }).skip(skip).limit(limit)
- 
-
-    res.json(showUser)
+      $and:[
+     {_id:{$nin:Array.from(hide)}},
+     {_id:{$ne:user?._id.toString()}}
+    ]
+    })                                                 
+     
+    res.json({showUser})
   } 
   catch (error) {
     res.status(400).send(`ERROR : ${error.message}`)

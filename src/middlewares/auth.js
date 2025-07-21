@@ -20,7 +20,7 @@ const Auth=async(req,res,next)=>{
         req.user=user
         next();
     } catch (error) {
-        res.status(400).send(`ERROR : ${error.message}`);
+        res.status(401).send(`ERROR : ${error.message}`);
     }
 }
 

@@ -6,6 +6,10 @@ const validate=(user)=>{
         throw new Error("Name is required");
     }
 
+    if(password.length<6){
+        throw new Error("Password is too short")
+    }
+
 }
 
 module.exports=validate

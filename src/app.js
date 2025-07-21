@@ -2,6 +2,7 @@ const express=require("express")
 const app=express()
 const {connectDB}=require("./config/dataBase") 
 const cookieParser=require("cookie-parser")
+const  cors=require("cors")
  
 
 const authRouter=require("./routers/auth")
@@ -11,9 +12,16 @@ const userRouter=require("./routers/user")
 
 app.use(express.json())
 app.use(cookieParser()) 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials:true,
+  })
+);
  
 
 //login and signup
+ 
 app.use("/",authRouter)
 app.use("/",profileRouter) 
 app.use("/",requestRouter)

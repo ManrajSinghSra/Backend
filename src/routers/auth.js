@@ -17,56 +17,61 @@ authRouter.post("/login", async (req, res) => {
     }
     const isPass = await user.verifyPass(password);
     if (!isPass) {
-      throw new Error("INVALID CREDENTIALS");
-    }
-    const cap =user.displayName()
+      throw new Error("INVALID CREDENTIALS!!!!!");
+    } 
     const token = await user.getToken();
+
+    
     res.cookie("token", token, {
       expires: new Date(Date.now() + 1 * 3600000),
       httpOnly: true,
     });
-    res.send(`Welcome ${cap}`);
+
+    res.json({user});
   } catch (error) {
     res.status(400).send(error.message);
   }
 });
-authRouter.post("/signup",async(req,res)=>{
 
+authRouter.post("/signup",async(req,res)=>{
     try { 
           validate(req.body);
-          const {firstName,lastName,emailId,password}=req.body;
-         
-  
+          const {firstName,lastName,emailId,password,age,gender,about}=req.body;
           const find = await User.findOne({emailId});
-  
+          
           if(find){
             throw new Error("EMAIL ALREADY TAKEN")
           }
           
           const hashPass = await bcrypt.hash(password, 10);
           
-          const user = new User({
+          const user1 = new User({
             firstName,
             lastName,
             emailId,
             password:hashPass,
+            age,
+            gender,
+            about
           });
   
-          await user.save();
-  
-          res.send("User successfully added");
+         const user= await user1.save();
+         const token = await user1.getToken();
+
+         res.cookie("token", token, {
+           expires: new Date(Date.now() + 1 * 3600000),
+           httpOnly: true,
+         });
+          res.json({user});
   
     } 
     
     catch (error) {
-            
-          res.send(`ERROR : ${error.message}`);
+          res.status(400).send(`ERROR : ${error.message}`);
     }
     
 })
 authRouter.post("/logout",(req,res)=>{ 
   res.clearCookie("token").send("Logout successful")
 })  
-  
-
 module.exports=authRouter

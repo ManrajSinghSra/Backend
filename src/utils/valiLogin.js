@@ -1,12 +1,11 @@
 const valiLogin = (req) => {
-
-  console.log(req.cookies);
+ 
 
   if(req.cookies.token){
     throw new Error("Please logout")
   }
   
-  const {  emailId, password } = req.body;
+  const {emailId,password} = req.body;
 
 
 
